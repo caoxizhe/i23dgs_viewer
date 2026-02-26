@@ -1,13 +1,21 @@
 package com.example.gs_remote_control
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.RadioGroup
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import fi.iki.elonen.NanoHTTPD
@@ -29,6 +37,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var accelSensor: Sensor? = null
     private var gyroSensor: Sensor? = null
+    private lateinit var locationManager: LocationManager
+
+    private enum class MeasureMode { IMU, GPS }
+    private var measureMode = MeasureMode.IMU
 
     // orientation fusion (gyro prediction + accelerometer correction)
     // quaternion body->world
@@ -76,6 +88,34 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var originSeq = 0
 
+    // GPS tracking state
+    private var gpsOriginLat: Double? = null
+    private var gpsOriginLon: Double? = null
+    private var gpsOriginAlt: Double? = null
+    private var gpsLastDx = 0f
+    private var gpsLastDy = 0f
+    private var gpsLastDz = 0f
+    private var gpsLastTsMs = 0L
+    private val locationIntervalMs = 300L
+    private val locationMinDistanceM = 0f
+    private var gpsListening = false
+    private var gpsProvider: String? = null
+    private val gpsLocationListener = LocationListener { loc -> onGpsLocation(loc) }
+
+    private val requestLocationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            if (granted) {
+                if (wsServer != null && measureMode == MeasureMode.GPS) {
+                    startGpsTracking()
+                    statusView.text = "WebSocket :8766 | GPS 采集中"
+                }
+            } else {
+                statusView.text = "需要定位权限以启用 GPS 模式"
+            }
+        }
+
     private val tag = "GsRemoteControl"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,10 +129,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val startBtn = findViewById<Button>(R.id.startBtn)
         val stopBtn = findViewById<Button>(R.id.stopBtn)
         val resetBtn = findViewById<Button>(R.id.resetBtn)
+        val modeGroup = findViewById<RadioGroup>(R.id.modeGroup)
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+
+        modeGroup.setOnCheckedChangeListener { _, checkedId ->
+            measureMode = if (checkedId == R.id.modeGps) MeasureMode.GPS else MeasureMode.IMU
+            applyMeasureMode()
+        }
 
         val ip = NetworkUtils.getLocalIpAddress(this) ?: "0.0.0.0"
         ipView.text = "IP: $ip"
@@ -123,7 +170,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         runOnUiThread {
             AlertDialog.Builder(this)
                 .setTitle("Connection request")
-                .setMessage("A remote viewer requests connection. Start IMU streaming?")
+                .setMessage("A remote viewer requests connection. Start streaming?")
                 .setPositiveButton("Start") { _, _ -> startStreaming() }
                 .setNegativeButton("Reject", null)
                 .show()
@@ -144,16 +191,167 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         wsServer?.start()
         resetTracking(false)
         streamStartNs = System.nanoTime()
-        registerSensors()
-        statusView.text = "WebSocket :8766 | IMU 采集中"
+        applyMeasureMode()
     }
 
     private fun stopStreaming() {
         unregisterSensors()
+        stopGpsTracking()
         wsServer?.stop()
         wsServer = null
         clientsView.text = "连接数: 0"
         statusView.text = "WebSocket stopped | 已停止"
+    }
+
+    private fun applyMeasureMode() {
+        if (wsServer == null) {
+            statusView.text = if (measureMode == MeasureMode.GPS) {
+                "HTTP invite running :8765 | GPS 已选择，等待启动"
+            } else {
+                "HTTP invite running :8765 | IMU 已选择，等待启动"
+            }
+            return
+        }
+
+        resetTracking(false)
+        streamStartNs = System.nanoTime()
+        if (measureMode == MeasureMode.GPS) {
+            unregisterSensors()
+            startGpsTracking()
+            if (hasLocationPermission()) {
+                statusView.text = "WebSocket :8766 | GPS 采集中"
+            }
+        } else {
+            stopGpsTracking()
+            registerSensors()
+            statusView.text = "WebSocket :8766 | IMU 采集中"
+        }
+    }
+
+    private fun hasLocationPermission(): Boolean {
+        val fine = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val coarse = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return fine || coarse
+    }
+
+    private fun startGpsTracking() {
+        if (!hasLocationPermission()) {
+            requestLocationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+            return
+        }
+
+        if (gpsListening) return
+
+        val provider = when {
+            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+            else -> null
+        }
+
+        if (provider == null) {
+            statusView.text = "GPS 不可用，请先打开定位"
+            return
+        }
+
+        gpsProvider = provider
+        try {
+            locationManager.requestLocationUpdates(
+                provider,
+                locationIntervalMs,
+                locationMinDistanceM,
+                gpsLocationListener,
+                mainLooper
+            )
+            gpsListening = true
+        } catch (se: SecurityException) {
+            gpsListening = false
+            gpsProvider = null
+            statusView.text = "定位权限被拒绝，无法启动 GPS"
+            Log.e(tag, "requestLocationUpdates SecurityException", se)
+        }
+    }
+
+    private fun stopGpsTracking() {
+        if (gpsListening) {
+            try {
+                locationManager.removeUpdates(gpsLocationListener)
+            } catch (se: SecurityException) {
+                Log.w(tag, "removeUpdates SecurityException", se)
+            }
+        }
+        gpsListening = false
+        gpsProvider = null
+    }
+
+    private fun onGpsLocation(loc: Location) {
+        if (measureMode != MeasureMode.GPS) return
+
+        if (gpsOriginLat == null || gpsOriginLon == null) {
+            gpsOriginLat = loc.latitude
+            gpsOriginLon = loc.longitude
+            gpsOriginAlt = if (loc.hasAltitude()) loc.altitude else null
+            gpsLastDx = 0f
+            gpsLastDy = 0f
+            gpsLastDz = 0f
+            gpsLastTsMs = loc.time
+            displacement.fill(0f)
+            velocity.fill(0f)
+            renderDisplacement()
+            return
+        }
+
+        val lat0 = gpsOriginLat!!
+        val lon0 = gpsOriginLon!!
+        val dLat = loc.latitude - lat0
+        val dLon = loc.longitude - lon0
+        val avgLatRad = Math.toRadians((loc.latitude + lat0) * 0.5)
+
+        val metersPerDegLat = 111_132.0
+        val metersPerDegLon = 111_320.0 * kotlin.math.cos(avgLatRad)
+
+        val dx = (dLon * metersPerDegLon).toFloat()
+        val dy = (dLat * metersPerDegLat).toFloat()
+        val dz = if (loc.hasAltitude() && gpsOriginAlt != null) {
+            (loc.altitude - gpsOriginAlt!!).toFloat()
+        } else {
+            0f
+        }
+
+        displacement[0] = dx
+        displacement[1] = dy
+        displacement[2] = dz
+
+        val ts = if (loc.time > 0) loc.time else System.currentTimeMillis()
+        val dt = ((ts - gpsLastTsMs).coerceAtLeast(0L) / 1000.0f)
+        if (dt > 0f && dt <= 5f) {
+            velocity[0] = (dx - gpsLastDx) / dt
+            velocity[1] = (dy - gpsLastDy) / dt
+            velocity[2] = (dz - gpsLastDz) / dt
+        } else {
+            velocity[0] = 0f
+            velocity[1] = 0f
+            velocity[2] = 0f
+        }
+
+        gpsLastDx = dx
+        gpsLastDy = dy
+        gpsLastDz = dz
+        gpsLastTsMs = ts
+
+        val now = System.currentTimeMillis()
+        if (now - lastBroadcastMs >= broadcastIntervalMs) {
+            lastBroadcastMs = now
+            wsServer?.broadcastJson(buildPayload(now))
+            runOnUiThread {
+                statusView.text = "WebSocket :8766 | GPS 采集中"
+                renderDisplacement()
+            }
+        }
     }
 
     private fun registerSensors() {
@@ -271,6 +469,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
+        if (measureMode != MeasureMode.IMU) return
+
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             latestAccel[0] = event.values[0]
             latestAccel[1] = event.values[1]
@@ -501,6 +701,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         stationarySinceNs = 0L
         isStationary = false
         streamStartNs = 0L
+        gpsOriginLat = null
+        gpsOriginLon = null
+        gpsOriginAlt = null
+        gpsLastDx = 0f
+        gpsLastDy = 0f
+        gpsLastDz = 0f
+        gpsLastTsMs = 0L
         displacement.fill(0f)
         velocity.fill(0f)
         originSeq += 1
@@ -554,6 +761,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         httpServer?.stop()
         wsServer?.stop()
         unregisterSensors()
+        stopGpsTracking()
     }
 }
 

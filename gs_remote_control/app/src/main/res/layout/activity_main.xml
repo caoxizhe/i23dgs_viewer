@@ -36,6 +36,51 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
+        android:id="@+id/modeRow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/headerSub"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="位移模式：IMU / GPS"
+            android:textColor="#D7E7FF"
+            android:textSize="13sp" />
+
+        <RadioGroup
+            android:id="@+id/modeGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:checkedButton="@id/modeImu">
+
+            <RadioButton
+                android:id="@+id/modeImu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="IMU"
+                android:textColor="#D7E7FF"
+                android:buttonTint="#D7E7FF"
+                android:paddingEnd="10dp" />
+
+            <RadioButton
+                android:id="@+id/modeGps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GPS"
+                android:textColor="#D7E7FF"
+                android:buttonTint="#D7E7FF" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/infoCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -43,7 +88,7 @@
         android:background="@drawable/tech_card_bg"
         android:orientation="vertical"
         android:padding="14dp"
-        app:layout_constraintTop_toBottomOf="@id/headerSub"
+        app:layout_constraintTop_toBottomOf="@id/modeRow"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
