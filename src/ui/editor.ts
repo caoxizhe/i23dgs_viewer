@@ -4,14 +4,14 @@ import { Mat4, path, Vec3 } from 'playcanvas';
 import { DataPanel } from './data-panel';
 import { Events } from '../events';
 import { BottomToolbar } from './bottom-toolbar';
-import { ImageContainer } from './image-container';
 import { ColorPanel } from './color-panel';
 import { ExportPopup } from './export-popup';
+import logo from './i23d-eye-logo.svg';
+import { ImageContainer } from './image-container';
 import { ImageSettingsDialog } from './image-settings-dialog';
 import { localize, localizeInit } from './localization';
 import { Menu } from './menu';
 import { ModeToggle } from './mode-toggle';
-import logo from './i23d-eye-logo.svg';
 import { Popup, ShowOptions } from './popup';
 import { Progress } from './progress';
 import { PublishSettingsDialog } from './publish-settings-dialog';
@@ -341,7 +341,9 @@ class EditorUI {
         });
         events.on('camera.setFrustumsVisible', (v: boolean) => {
             frustumsVisible = !!v;
-            try { localStorage.setItem('camera.frustumsVisible', frustumsVisible ? 'true' : 'false'); } catch { }
+            try {
+                localStorage.setItem('camera.frustumsVisible', frustumsVisible ? 'true' : 'false');
+            } catch { }
             events.fire('camera.frustumsVisible.changed', frustumsVisible);
         });
 
@@ -358,7 +360,9 @@ class EditorUI {
         events.on('camera.setRotationMode', (mode: string) => {
             if (mode !== 'free' && mode !== 'horizontal') return;
             rotationMode = mode;
-            try { localStorage.setItem('camera.rotationMode', rotationMode); } catch { }
+            try {
+                localStorage.setItem('camera.rotationMode', rotationMode);
+            } catch { }
             events.fire('camera.rotationMode.changed', rotationMode);
         });
 

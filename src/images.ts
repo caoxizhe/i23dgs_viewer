@@ -46,21 +46,21 @@ const registerImageEvents = (events: Events) => {
     // Get images for a specific frame (or nearest previous keyframe)
     const getImagesForFrame = (frame: number): HTMLImageElement[] => {
         if (frameImageMap.size === 0) return [];
-        
+
         // Find the greatest frame key <= current frame
         const sortedKeys = Array.from(frameImageMap.keys()).sort((a, b) => a - b);
         let displayFrame: number | null = null;
-        
+
         for (const key of sortedKeys) {
             if (key <= frame) displayFrame = key;
             else break;
         }
-        
+
         // Fallback to first frame if before all keyframes
         if (displayFrame === null && sortedKeys.length > 0) {
             displayFrame = sortedKeys[0];
         }
-        
+
         return displayFrame !== null ? (frameImageMap.get(displayFrame) || []) : [];
     };
 
@@ -73,8 +73,8 @@ const registerImageEvents = (events: Events) => {
             if (!target) return;
 
             const bareTarget = String(target).replace(/\.[^/.]+$/, '');
-            let img = byName.get(String(target))
-                || byBare.get(bareTarget);
+            let img = byName.get(String(target)) ||
+                byBare.get(bareTarget);
             if (!img) {
                 const idx = extractIndex(String(target));
                 if (Number.isFinite(idx) && byIndex.has(idx)) {
@@ -143,7 +143,7 @@ const registerImageEvents = (events: Events) => {
     });
 
     // Upload images from a folder and match to timeline frames
-    events.on('images.uploadFolder', async () => {
+    events.on('images.uploadFolder', () => {
         const dirInput = document.createElement('input');
         dirInput.type = 'file';
         (dirInput as any).webkitdirectory = true;
@@ -151,7 +151,7 @@ const registerImageEvents = (events: Events) => {
         dirInput.accept = 'image/*';
         dirInput.style.display = 'none';
 
-        dirInput.onchange = async (ev: Event) => {
+        dirInput.onchange = (ev: Event) => {
             const inputEl = ev.target as HTMLInputElement;
             const files = inputEl.files;
             if (!files || files.length === 0) {
@@ -192,7 +192,7 @@ const registerImageEvents = (events: Events) => {
 
             fileList.forEach((file, index) => {
                 const img = new Image();
-                
+
                 img.onload = () => {
                     const bare = file.name.replace(/\.[^/.]+$/, '');
                     const idx = extractIndex(file.name);
@@ -200,7 +200,7 @@ const registerImageEvents = (events: Events) => {
                     byName.set(file.name, img);
                     byBare.set(bare, img);
                     if (Number.isFinite(idx)) byIndex.set(idx, img);
-                    
+
                     loadedCount++;
                     if (loadedCount === totalFiles) {
                         // after loading all, try to match frames based on names provided by cameras
@@ -208,14 +208,14 @@ const registerImageEvents = (events: Events) => {
                         console.log(`Loaded ${totalFiles} images from folder`);
                     }
                 };
-                
+
                 img.onerror = () => {
                     loadedCount++;
                     if (loadedCount === totalFiles) {
                         matchFrames();
                     }
                 };
-                
+
                 img.src = URL.createObjectURL(file);
             });
 

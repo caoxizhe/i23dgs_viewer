@@ -1,13 +1,13 @@
 import { EventHandle } from 'playcanvas';
 
+import { ElementType } from './element';
 import { Events } from './events';
 import { Splat } from './splat';
-import { ElementType } from './element';
 
 const registerTimelineEvents = (events: Events) => {
     // frames
     // let frames = 180;
-    let frames = 1200; 
+    let frames = 1200;
     let smoothness = 1;
 
     const setFrames = (value: number) => {
@@ -134,11 +134,11 @@ const registerTimelineEvents = (events: Events) => {
         if (!selectedSplat) {
             return [];
         }
-        
+
         if (!splatKeys.has(selectedSplat)) {
             splatKeys.set(selectedSplat, []);
         }
-        
+
         return splatKeys.get(selectedSplat)!;
     };
 
@@ -152,11 +152,11 @@ const registerTimelineEvents = (events: Events) => {
         if (!selectedSplat) {
             return;
         }
-        
+
         if (!splatKeys.has(selectedSplat)) {
             splatKeys.set(selectedSplat, []);
         }
-        
+
         const keys = splatKeys.get(selectedSplat)!;
         if (!keys.includes(frame)) {
             keys.push(frame);
@@ -170,7 +170,7 @@ const registerTimelineEvents = (events: Events) => {
         if (!selectedSplat) {
             return;
         }
-        
+
         const keys = splatKeys.get(selectedSplat);
         if (keys && index >= 0 && index < keys.length) {
             keys.splice(index, 1);
@@ -184,7 +184,7 @@ const registerTimelineEvents = (events: Events) => {
         if (!selectedSplat) {
             return;
         }
-        
+
         const keys = splatKeys.get(selectedSplat);
         if (keys && index >= 0 && index < keys.length && frame !== keys[index]) {
             keys[index] = frame;
@@ -222,15 +222,15 @@ const registerTimelineEvents = (events: Events) => {
             // 对关键帧排序，找到第一个
             const sortedKeys = keys.slice().sort((a, b) => a - b);
             const firstKey = sortedKeys[0];
-            
+
             // 跳转到第一个关键帧
             setFrame(firstKey);
             console.log(`跳转到第一个关键帧: ${firstKey}`);
             return true;
-        } else {
-            console.log('当前PLY没有关键帧');
-            return false;
         }
+        console.log('当前PLY没有关键帧');
+        return false;
+
     });
 
     // doc
@@ -270,7 +270,7 @@ const registerTimelineEvents = (events: Events) => {
                         splatKeys.set(splat, keys.slice());
                     }
                 });
-                
+
                 // 触发UI更新
                 const currentSelection = events.invoke('selection') as Splat;
                 if (currentSelection) {

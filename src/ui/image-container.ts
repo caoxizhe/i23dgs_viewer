@@ -5,7 +5,7 @@ import { Events } from '../events';
 class ImageContainer extends Container {
     private overlayEl: HTMLDivElement | null = null;
     private overlayScale = 1;
-    
+
     // Image viewer state
     private viewerEl: HTMLDivElement | null = null;
     private viewerStageEl: HTMLDivElement | null = null;
@@ -72,9 +72,9 @@ class ImageContainer extends Container {
             const rawPos = events.invoke('camera.frameRawPos', displayFrame) as [number, number, number] | undefined;
             const rawRot = events.invoke('camera.frameRawRot', displayFrame) as number[] | null | undefined;
             const fmt3 = (a: number[]) => `[${a[0].toFixed(3)}, ${a[1].toFixed(3)}, ${a[2].toFixed(3)}]`;
-            const rotText = rawRot && rawRot.length === 9
-                ? `[[${rawRot[0].toFixed(3)}, ${rawRot[1].toFixed(3)}, ${rawRot[2].toFixed(3)}],\n [${rawRot[3].toFixed(3)}, ${rawRot[4].toFixed(3)}, ${rawRot[5].toFixed(3)}],\n [${rawRot[6].toFixed(3)}, ${rawRot[7].toFixed(3)}, ${rawRot[8].toFixed(3)}]]`
-                : 'N/A';
+            const rotText = rawRot && rawRot.length === 9 ?
+                `[[${rawRot[0].toFixed(3)}, ${rawRot[1].toFixed(3)}, ${rawRot[2].toFixed(3)}],\n [${rawRot[3].toFixed(3)}, ${rawRot[4].toFixed(3)}, ${rawRot[5].toFixed(3)}],\n [${rawRot[6].toFixed(3)}, ${rawRot[7].toFixed(3)}, ${rawRot[8].toFixed(3)}]]` :
+                'N/A';
 
             // layout images as thumbnails in top-right corner
             const padding = 8;
@@ -200,7 +200,9 @@ class ImageContainer extends Container {
                 const m = el.style.transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
                 dragBaseX = m ? parseFloat(m[1]) : 0;
                 dragBaseY = m ? parseFloat(m[2]) : 0;
-                try { (el as any).setPointerCapture?.(ev.pointerId); } catch { /* noop */ }
+                try {
+                    (el as any).setPointerCapture?.(ev.pointerId);
+                } catch { /* noop */ }
             };
             const onPointerMove = (ev: PointerEvent) => {
                 if (!dragActive) return;
@@ -213,7 +215,9 @@ class ImageContainer extends Container {
             const onPointerUp = (ev: PointerEvent) => {
                 if (!dragActive) return;
                 dragActive = false;
-                try { (el as any).releasePointerCapture?.(ev.pointerId); } catch { /* noop */ }
+                try {
+                    (el as any).releasePointerCapture?.(ev.pointerId);
+                } catch { /* noop */ }
             };
             el.addEventListener('pointerdown', onPointerDown);
             el.addEventListener('pointermove', onPointerMove);
@@ -431,9 +435,15 @@ class ImageContainer extends Container {
         });
 
         // toolbar actions
-        btnZoomIn.addEventListener('click', () => { setScale(this.vScale * 1.2); });
-        btnZoomOut.addEventListener('click', () => { setScale(this.vScale / 1.2); });
-        btnOne.addEventListener('click', () => { setScale(1); centerImage(); });
+        btnZoomIn.addEventListener('click', () => {
+            setScale(this.vScale * 1.2);
+        });
+        btnZoomOut.addEventListener('click', () => {
+            setScale(this.vScale / 1.2);
+        });
+        btnOne.addEventListener('click', () => {
+            setScale(1); centerImage();
+        });
         btnFit.addEventListener('click', () => {
             this.vMinScale = computeFit();
             setScale(this.vMinScale);
@@ -445,7 +455,9 @@ class ImageContainer extends Container {
         btnNext.addEventListener('click', () => {
             if (this.viewerImages.length) setImage((this.viewerIndex + 1) % this.viewerImages.length);
         });
-        closeBtn.addEventListener('click', () => { this.closeImageViewer(); });
+        closeBtn.addEventListener('click', () => {
+            this.closeImageViewer();
+        });
 
         // expose helpers on root for reuse
         (root as any)._setImage = setImage;
@@ -466,11 +478,21 @@ class ImageContainer extends Container {
         // close on Esc
         const onKey = (e: KeyboardEvent) => {
             if (!this.viewerEl || this.viewerEl.style.display === 'none') return;
-            if (e.key === 'Escape') { this.closeImageViewer(); }
-            if (e.key === 'ArrowLeft') { this.viewerPrevBtn?.click(); }
-            if (e.key === 'ArrowRight') { this.viewerNextBtn?.click(); }
-            if (e.key === '+') { this.viewerZoomInBtn?.click(); }
-            if (e.key === '-') { this.viewerZoomOutBtn?.click(); }
+            if (e.key === 'Escape') {
+                this.closeImageViewer();
+            }
+            if (e.key === 'ArrowLeft') {
+                this.viewerPrevBtn?.click();
+            }
+            if (e.key === 'ArrowRight') {
+                this.viewerNextBtn?.click();
+            }
+            if (e.key === '+') {
+                this.viewerZoomInBtn?.click();
+            }
+            if (e.key === '-') {
+                this.viewerZoomOutBtn?.click();
+            }
         };
         window.addEventListener('keydown', onKey);
         (this.viewerEl as any)._onKey = onKey;

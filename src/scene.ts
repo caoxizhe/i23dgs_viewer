@@ -13,6 +13,7 @@ import {
 
 import { AssetLoader } from './asset-loader';
 import { Camera } from './camera';
+import { CameraFrustums } from './camera-frustums';
 import { DataProcessor } from './data-processor';
 import { Element, ElementType, ElementTypeList } from './element';
 import { Events } from './events';
@@ -24,7 +25,6 @@ import { SceneState } from './scene-state';
 import { Splat } from './splat';
 import { SplatOverlay } from './splat-overlay';
 import { Underlay } from './underlay';
-import { CameraFrustums } from './camera-frustums';
 
 class Scene {
     events: Events;
@@ -227,7 +227,7 @@ class Scene {
     clear() {
         // 通知所有监听者即将清理场景，让modules提前清理DOM等资源
         this.events.fire('scene.clearing');
-        
+
         const splats = this.getElementsByType(ElementType.splat);
         splats.forEach((splat) => {
             this.remove(splat);

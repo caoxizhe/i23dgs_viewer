@@ -163,5 +163,3 @@ const registerTimelineEvents = (events: Events) => {
 };
 
 export { registerTimelineEvents };
-
-

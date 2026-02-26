@@ -99,9 +99,9 @@ const registerRemoteControlEvents = (events: Events) => {
         el.style.borderRadius = '6px';
         el.style.cursor = 'pointer';
         el.style.border = primary ? '1px solid rgba(255, 255, 255, 0.24)' : '1px solid rgba(255, 255, 255, 0.14)';
-        el.style.background = primary
-            ? 'linear-gradient(180deg, rgba(74, 79, 89, 0.98), rgba(52, 56, 64, 0.98))'
-            : 'linear-gradient(180deg, rgba(46, 50, 58, 0.98), rgba(31, 34, 41, 0.98))';
+        el.style.background = primary ?
+            'linear-gradient(180deg, rgba(74, 79, 89, 0.98), rgba(52, 56, 64, 0.98))' :
+            'linear-gradient(180deg, rgba(46, 50, 58, 0.98), rgba(31, 34, 41, 0.98))';
         el.style.color = '#edf0f4';
         el.style.fontWeight = '600';
     };

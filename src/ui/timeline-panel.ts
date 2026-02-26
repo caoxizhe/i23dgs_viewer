@@ -205,8 +205,8 @@ class TimelinePanel extends Container {
             enabled: true
         });
 
-        const uploadImages = new Button({ 
-            class: 'button', 
+        const uploadImages = new Button({
+            class: 'button',
             text: 'IMG',
             enabled: true
         });

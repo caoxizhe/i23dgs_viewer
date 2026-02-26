@@ -1,9 +1,9 @@
 import { Vec3, EventHandle } from 'playcanvas';
 
 import { CubicSpline } from './anim/spline';
+import { ElementType } from './element';
 import { Events } from './events';
 import { Splat } from './splat';
-import { ElementType } from './element';
 
 type Pose = {
     name: string,
@@ -17,7 +17,9 @@ const registerCameraPosesEvents = (events: Events) => {
     // simplify keys toggle (default OFF)
     let simplifyKeys = false;
     events.function('camera.simplify.get', () => simplifyKeys);
-    events.on('camera.simplify.set', (v: boolean) => { simplifyKeys = !!v; });
+    events.on('camera.simplify.set', (v: boolean) => {
+        simplifyKeys = !!v;
+    });
 
     // 提取旋转矩阵第三列（相机 Z 轴在世界坐标中的方向，若矩阵列向量描述相机坐标轴）
     const rotationCol3 = (rotation: any): Vec3 | null => {
@@ -39,10 +41,6 @@ const registerCameraPosesEvents = (events: Events) => {
     };
 
     // ===== Overlay removed - now managed by ImageContainer =====
-    // ===== Expose camera metadata for ImageContainer =====
-    events.function('camera.frameCameraId', (frame: number) => frameCameraIdMap.get(frame) ?? '');
-    events.function('camera.frameRawPos', (frame: number) => frameRawPosMap.get(frame));
-    events.function('camera.frameRawRot', (frame: number) => frameRawRotMap.get(frame));
 
     // independent caption box (always shown even without images), placed below Scene Manager panel
     let captionBox = document.getElementById('camera-caption-box') as HTMLDivElement | null;
@@ -93,6 +91,11 @@ const registerCameraPosesEvents = (events: Events) => {
     // cache: image name(lowercased, with/without ext) -> blob url
     const imageUrlByName = new Map<string, string>();
 
+    // ===== Expose camera metadata for ImageContainer =====
+    events.function('camera.frameCameraId', (frame: number) => frameCameraIdMap.get(frame) ?? '');
+    events.function('camera.frameRawPos', (frame: number) => frameRawPosMap.get(frame));
+    events.function('camera.frameRawRot', (frame: number) => frameRawRotMap.get(frame));
+
     // helpers for rotation transforms and intrinsics
     const toMat3 = (M: any): number[][] | null => {
         if (!M) return null;
@@ -114,7 +117,7 @@ const registerCameraPosesEvents = (events: Events) => {
         return [
             [-m[0][0], -m[0][1], -m[0][2]],
             [-m[1][0], -m[1][1], -m[1][2]],
-            [ m[2][0],  m[2][1],  m[2][2]]
+            [m[2][0],  m[2][1],  m[2][2]]
         ];
     };
     const flipXYRotation = convertRotationToPlayCanvas;
@@ -129,7 +132,9 @@ const registerCameraPosesEvents = (events: Events) => {
         }
         if ((!fx || !fy) && cam?.K) {
             const K = toMat3(cam.K);
-            if (K) { fx = fx ?? K[0][0]; fy = fy ?? K[1][1]; }
+            if (K) {
+                fx = fx ?? K[0][0]; fy = fy ?? K[1][1];
+            }
         }
         return { fx, fy };
     };
@@ -175,10 +180,12 @@ const registerCameraPosesEvents = (events: Events) => {
     };
     const quatSlerp = (a: QuatT, b: QuatT, t: number): QuatT => {
         // ensure shortest path
-        let ax = a.x, ay = a.y, az = a.z, aw = a.w;
+        const ax = a.x, ay = a.y, az = a.z, aw = a.w;
         let bx = b.x, by = b.y, bz = b.z, bw = b.w;
         let cos = ax * bx + ay * by + az * bz + aw * bw;
-        if (cos < 0) { bx = -bx; by = -by; bz = -bz; bw = -bw; cos = -cos; }
+        if (cos < 0) {
+            bx = -bx; by = -by; bz = -bz; bw = -bw; cos = -cos;
+        }
         let k0: number, k1: number;
         if (1 - cos > 1e-6) {
             const theta = Math.acos(Math.max(-1, Math.min(1, cos)));
@@ -214,6 +221,7 @@ const registerCameraPosesEvents = (events: Events) => {
     let onTimelineChange: (frame: number) => void;
     // 跳转过程标记：避免 timeline 的 onTimelineChange 在跳转动画期间覆盖自定义插值的方向，造成画面与轴突变
     let jumpInProgress = false;
+    let jumpAnimHandle: EventHandle | null = null;
     let lastPoseForCaption: { position: Vec3, target: Vec3 } | null = null;
     let lastRotationForCaption: number[][] | null = null;
 
@@ -223,11 +231,11 @@ const registerCameraPosesEvents = (events: Events) => {
         if (!selectedSplat) {
             return [];
         }
-        
+
         if (!splatPoses.has(selectedSplat)) {
             splatPoses.set(selectedSplat, []);
         }
-        
+
         return splatPoses.get(selectedSplat)!;
     };
 
@@ -284,11 +292,11 @@ const registerCameraPosesEvents = (events: Events) => {
                 const haveBoth = !!(m0 && m1);
 
                 // Interpolate in fov domain (radians). Use aspect to derive missing axis.
-                let fx: number | undefined = undefined;
-                let fy: number | undefined = undefined;
+                let fx: number | undefined;
+                let fy: number | undefined;
                 const ts = (events.invoke('targetSize') || { width: 1, height: 1 }) as { width: number, height: number };
-                const width = Math.max(1, ts.width|0);
-                const height = Math.max(1, ts.height|0);
+                const width = Math.max(1, ts.width | 0);
+                const height = Math.max(1, ts.height | 0);
                 const aspect = width / height;
                 const fx0 = frameFxMap.get(f0); const fx1 = frameFxMap.get(f1);
                 const fy0 = frameFyMap.get(f0); const fy1 = frameFyMap.get(f1);
@@ -312,7 +320,7 @@ const registerCameraPosesEvents = (events: Events) => {
                 };
                 const p0 = fovPair(fx0, fy0);
                 const p1 = fovPair(fx1, fy1);
-                const lerp = (a?: number, b?: number) => (Number.isFinite(a as number) && Number.isFinite(b as number)) ? (a as number) * (1 - t) + (b as number) * t : (Number.isFinite(a as number) ? a : (Number.isFinite(b as number) ? b : undefined));
+                const lerp = (a?: number, b?: number) => ((Number.isFinite(a as number) && Number.isFinite(b as number)) ? (a as number) * (1 - t) + (b as number) * t : (Number.isFinite(a as number) ? a : (Number.isFinite(b as number) ? b : undefined)));
                 const fovX = lerp(p0.fovX, p1.fovX);
                 const fovY = lerp(p0.fovY, p1.fovY);
                 if (Number.isFinite(fovX as number)) fx = width / (2 * Math.tan((fovX as number) / 2));
@@ -480,9 +488,9 @@ const registerCameraPosesEvents = (events: Events) => {
                     const B = mat3FromQuat({ x: q.x, y: q.y, z: q.z, w: q.w });
                     // convert to pre-flip basis expected by setView pipeline: Mpre = [B0, -B1, -B2]
                     const Mpre = [
-                        [ B[0][0], -B[0][1], -B[0][2] ],
-                        [ B[1][0], -B[1][1], -B[1][2] ],
-                        [ B[2][0], -B[2][1], -B[2][2] ]
+                        [B[0][0], -B[0][1], -B[0][2]],
+                        [B[1][0], -B[1][1], -B[1][2]],
+                        [B[2][0], -B[2][1], -B[2][2]]
                     ];
                     // store RAW-like matrix so later flipXYRotation(raw) == Mpre
                     const Raw = flipXYRotation(Mpre);
@@ -554,15 +562,17 @@ const registerCameraPosesEvents = (events: Events) => {
         // 场景中心（全部相机）
         const sceneCenter = new Vec3(0, 0, 0);
         let validCount = 0;
-        cameras.forEach(c => {
-            if (c.position && Array.isArray(c.position)) { sceneCenter.add(new Vec3(c.position)); validCount++; }
+        cameras.forEach((c) => {
+            if (c.position && Array.isArray(c.position)) {
+                sceneCenter.add(new Vec3(c.position)); validCount++;
+            }
         });
         if (validCount > 0) sceneCenter.mulScalar(1 / validCount);
 
         // 平均距离（基于所选集合）
         let averageDistance = 0;
         if (selectedCameras.length > 0) {
-            selectedCameras.forEach(c => {
+            selectedCameras.forEach((c) => {
                 if (c.position && Array.isArray(c.position)) averageDistance += new Vec3(c.position).distance(sceneCenter);
             });
             averageDistance /= Math.max(1, selectedCameras.length);
@@ -579,7 +589,7 @@ const registerCameraPosesEvents = (events: Events) => {
         const step = (n > 1) ? Math.max(minGap, Math.ceil((baseFrames - 1) / desiredSteps)) : 1;
         const finalFrames = (n > 1) ? (step * desiredSteps + 1) : baseFrames;
         events.fire('timeline.setFrames', finalFrames);
-        const frameForIndex = (i: number) => (n > 1) ? (i * step) : 0;
+        const frameForIndex = (i: number) => ((n > 1) ? (i * step) : 0);
 
         // 清空并重建映射
         const newPoses: Pose[] = [];
@@ -775,7 +785,7 @@ const registerCameraPosesEvents = (events: Events) => {
         const jsonString = JSON.stringify(data, null, 2);
         const blob = new Blob([jsonString], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        
+
         const a = document.createElement('a');
         a.href = url;
         a.download = `${selectedSplat.name}_keyframes.json`;
@@ -873,9 +883,9 @@ const registerCameraPosesEvents = (events: Events) => {
                     // 智能选取相机视角，确保平滑过渡
                     const totalCameras = cameras.length;
                     const maxCameras = 10; // 最多选择10个相机
-                    
+
                     let selectedCameras: any[] = [];
-                    
+
                     if (!events.invoke('camera.simplify.get')) {
                         // 默认：不开简化——使用全部相机
                         selectedCameras = cameras;
@@ -934,7 +944,7 @@ const registerCameraPosesEvents = (events: Events) => {
                     const newPoses: Pose[] = [];
                     // 尝试在加载时用 setView 恢复 FOV/roll（仅首次调用一次）
                     let didSetInitialView = false;
-                    
+
                     // 自适应调整 timeline 总帧数，保证相邻关键帧至少 18 帧
                     const minGap = 18;
                     const n = Math.max(1, selectedCameras.length);
@@ -944,7 +954,7 @@ const registerCameraPosesEvents = (events: Events) => {
                     const finalFrames = (n > 1) ? (step * desiredSteps + 1) : baseFrames;
                     events.fire('timeline.setFrames', finalFrames);
 
-                    const frameForIndex = (i: number) => (n > 1) ? (i * step) : 0;
+                    const frameForIndex = (i: number) => ((n > 1) ? (i * step) : 0);
 
                     // reset maps for current selection before filling
                     events.invoke('images.clear');
@@ -976,7 +986,9 @@ const registerCameraPosesEvents = (events: Events) => {
                         };
                         if ((!fx || !fy) && cam.K) {
                             const K = toMat3(cam.K);
-                            if (K) { fx = K[0][0]; fy = K[1][1]; }
+                            if (K) {
+                                fx = K[0][0]; fy = K[1][1];
+                            }
                         }
                         return { fx, fy };
                     };
@@ -1021,7 +1033,7 @@ const registerCameraPosesEvents = (events: Events) => {
                             const { fx, fy } = extractFxFy(cameraData);
                             if (rotT) {
                                 // 若有显式 target 则一并变换
-                                let tgtForView: Vec3 | undefined = undefined;
+                                let tgtForView: Vec3 | undefined;
                                 if (cameraData.target && Array.isArray(cameraData.target)) {
                                     const t = cameraData.target;
                                     tgtForView = new Vec3(-t[0], -t[1], t[2]);
@@ -1171,7 +1183,11 @@ const registerCameraPosesEvents = (events: Events) => {
         // 场景中心（全部相机）
         const sceneCenter = new Vec3(0, 0, 0);
         let validCount = 0;
-        cameras.forEach(c => { if (c.position && Array.isArray(c.position)) { sceneCenter.add(new Vec3(c.position)); validCount++; } });
+        cameras.forEach((c) => {
+            if (c.position && Array.isArray(c.position)) {
+                sceneCenter.add(new Vec3(c.position)); validCount++;
+            }
+        });
         if (validCount > 0) sceneCenter.mulScalar(1 / validCount);
         // 时间轴帧分配
         const minGap = 18;
@@ -1181,7 +1197,7 @@ const registerCameraPosesEvents = (events: Events) => {
         const step = (n > 1) ? Math.max(minGap, Math.ceil((baseFrames - 1) / desiredSteps)) : 1;
         const finalFrames = (n > 1) ? (step * desiredSteps + 1) : baseFrames;
         events.fire('timeline.setFrames', finalFrames);
-        const frameForIndex = (i: number) => (n > 1) ? (i * step) : 0;
+        const frameForIndex = (i: number) => ((n > 1) ? (i * step) : 0);
         // 清空旧数据
         splatPoses.set(selectedSplat, []);
         events.invoke('images.clear');
@@ -1337,7 +1353,7 @@ const registerCameraPosesEvents = (events: Events) => {
         // 延迟恢复，等待所有splat加载完成
         setTimeout(() => {
             const allSplats = events.invoke('scene.allSplats') as Splat[];
-            
+
             poseSets.forEach((poseSet: any) => {
                 // 根据名称找到对应的splat
                 const splat = allSplats.find(s => s.name === poseSet.name);
@@ -1371,7 +1387,6 @@ const registerCameraPosesEvents = (events: Events) => {
     });
 
     // 跳转到最近关键帧事件处理
-    let jumpAnimHandle: EventHandle | null = null;
     events.on('camera.jumpToNearestPose', () => {
         // 获取当前选中 splat 的关键帧列表
         const poses = getCurrentSplatPoses();
@@ -1435,9 +1450,9 @@ const registerCameraPosesEvents = (events: Events) => {
             if (q) {
                 const B = mat3FromQuat({ x: q.x, y: q.y, z: q.z, w: q.w });
                 const Mpre = [
-                    [ B[0][0], -B[0][1], -B[0][2] ],
-                    [ B[1][0], -B[1][1], -B[1][2] ],
-                    [ B[2][0], -B[2][1], -B[2][2] ]
+                    [B[0][0], -B[0][1], -B[0][2]],
+                    [B[1][0], -B[1][1], -B[1][2]],
+                    [B[2][0], -B[2][1], -B[2][2]]
                 ];
                 qStart = quatFromMat3(Mpre);
             }
@@ -1473,7 +1488,9 @@ const registerCameraPosesEvents = (events: Events) => {
             const fwd = nearest.target.clone().sub(nearest.position).normalize();
             const up = new Vec3(0, 1, 0);
             let right = new Vec3().cross(up, fwd);
-            if (right.length() < 1e-4) { up.set(0, 0, 1); right = new Vec3().cross(up, fwd); }
+            if (right.length() < 1e-4) {
+                up.set(0, 0, 1); right = new Vec3().cross(up, fwd);
+            }
             right.normalize();
             const realUp = new Vec3().cross(fwd, right).normalize();
             const m = [
@@ -1487,8 +1504,8 @@ const registerCameraPosesEvents = (events: Events) => {
         let elapsed = 0;
         let acc = 0;
 
-    jumpInProgress = true;
-    jumpAnimHandle = events.on('update', (dt: number) => {
+        jumpInProgress = true;
+        jumpAnimHandle = events.on('update', (dt: number) => {
             elapsed += dt;
             acc += dt;
 

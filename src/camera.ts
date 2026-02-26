@@ -237,7 +237,7 @@ class Camera extends Element {
 
     setPose(position: Vec3, target: Vec3, dampingFactorFactor: number = 1) {
     // setPose uses orbit model -> exit free mode
-    this.freeMode = false;
+        this.freeMode = false;
         vec.sub2(target, position);
         const l = vec.length();
         const azim = Math.atan2(-vec.x / l, -vec.z / l) * math.RAD_TO_DEG;

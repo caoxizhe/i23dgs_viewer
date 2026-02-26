@@ -22,7 +22,7 @@ class PointerController {
 
         const pan = (x: number, y: number, dx: number, dy: number) => {
             camera.exitFreeMode();
-            
+
             // For panning to work at any zoom level, we use screen point to world projection
             // to work out how far we need to pan the pivotEntity in world space
             const c = camera.entity.camera;
@@ -52,7 +52,7 @@ class PointerController {
 
         const pointerdown = (event: PointerEvent) => {
             if (event.pointerType === 'mouse') {
-               if (buttons.every(b => !b)) {
+                if (buttons.every(b => !b)) {
                     target.setPointerCapture(event.pointerId);
                 }
                 buttons[event.button] = true;
@@ -145,7 +145,7 @@ class PointerController {
         };
 
         const wheel = (event: WheelEvent) => {
-            
+
             const { deltaX, deltaY } = event;
 
             if (isMouseEvent(deltaX, deltaY)) {
@@ -176,7 +176,7 @@ class PointerController {
             ArrowDown: 0,
             ArrowLeft: 0,
             ArrowRight: 0,
-            
+
             // 添加 WASDQE 按键支持
             w: 0,
             a: 0,

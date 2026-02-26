@@ -13,7 +13,7 @@ class CameraFrustums extends Element {
         super(ElementType.debug);
         this.events = events;
         this.cameras = [];
-            this.visible = false;
+        this.visible = false;
     }
 
     add() {
@@ -22,12 +22,14 @@ class CameraFrustums extends Element {
             if (!Array.isArray(cameras)) return;
             this.cameras = cameras.slice();
         });
-            // listen for visibility toggle
-            this.events.on('camera.frustumVisible', (value: boolean) => {
-                this.visible = !!value;
-            });
+        // listen for visibility toggle
+        this.events.on('camera.frustumVisible', (value: boolean) => {
+            this.visible = !!value;
+        });
         // also clear when scene cleared
-        this.events.on('scene.clearing', () => { this.cameras = []; });
+        this.events.on('scene.clearing', () => {
+            this.cameras = [];
+        });
     }
 
     onPreRender() {
