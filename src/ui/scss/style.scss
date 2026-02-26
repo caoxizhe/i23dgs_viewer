@@ -1,0 +1,323 @@
+@use 'pcui-theme-grey.scss';
+@use 'colors.scss' as *;
+@use 'tooltips.scss';
+@use 'panel.scss';
+@use 'menu-panel.scss';
+@use 'menu.scss';
+@use 'scene-panel.scss';
+@use 'view-panel.scss';
+@use 'color-panel.scss';
+@use 'splat-list.scss';
+@use 'transform.scss';
+@use 'bottom-toolbar.scss';
+@use 'right-toolbar.scss';
+@use 'select-toolbar.scss';
+@use 'data-panel.scss';
+@use 'popup.scss';
+@use 'mode-toggle.scss';
+@use 'settings-dialog.scss';
+@use 'spinner.scss';
+@use 'progress.scss';
+@use 'export-popup.scss';
+@use 'timeline-panel.scss';
+@use 'tool.scss';
+
+* {
+    font-size: 12px;
+    user-select: none;
+    overscroll-behavior: none;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    max-height: 100%;
+    background: linear-gradient(180deg, #0f1114 0%, #121418 45%, #101216 100%);
+    overflow: hidden;
+    touch-action: none;
+    color: $text-primary;
+}
+
+#app-container {
+    width: 100%;
+    height: 100%;
+}
+
+#editor-container {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+#main-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+#sep-container {
+    background-color: $bcg-darker;
+}
+
+#sep-container > span {
+    color: white;
+}
+
+#coord-space-toggle.active {
+    background-color: $bcg-dark !important;
+    color: $clr-hilight;
+}
+
+#file-selector {
+    display: none;
+}
+
+#file-menu {
+    position: absolute;
+}
+
+.file-menu-item span {
+    padding: 6px;
+    color: $text-secondary !important;
+    font-size: 14px;
+}
+
+#shortcuts-panel {
+    background-color: rgba(23, 25, 30, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+#shortcuts-container {
+    margin: 10px;
+}
+
+.shortcut-key {
+    width: 80px;
+    text-align: right;
+}
+
+.shortcut-header {
+    background-color: #202329;
+    text-transform: uppercase;
+}
+
+#app-label {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    color: $text-primary;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+#cursor-label {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    color: $text-primary;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+
+    cursor: pointer;
+
+    &:hover {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background-color: rgba(28, 31, 37, 0.96);
+    }
+}
+
+#view-cube-container {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    right: 0px;
+    top: 0px;
+    pointer-events: none;
+}
+
+#mask-canvas {
+    display: none;
+    position: absolute;
+    opacity: 0.4;
+}
+
+#canvas-container {
+    width: 100%;
+    display: flex;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+#tools-container {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    &.noevents {
+        pointer-events: none;
+    }
+}
+
+#canvas {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+}
+
+#tooltips-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#top-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+// placeholder
+.pcui-input-element[placeholder] {
+    &::after {
+        color: $text-darkest;
+    }
+}
+
+.pcui-vector-input {
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+/* scrollbar styling */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #171a1f;
+}
+::-webkit-scrollbar-thumb {
+    background: #4a4f59;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #6c737f;
+}
+::-webkit-scrollbar-corner {
+    background: #12151a;
+}
+
+// Global PCUI futuristic skin (crisp readability)
+.pcui-element {
+    color: $text-primary;
+    text-shadow: none !important;
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+}
+
+.pcui-button,
+button {
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    background: linear-gradient(180deg, rgba(46, 50, 58, 0.98), rgba(31, 34, 41, 0.98)) !important;
+    color: #edf5ff !important;
+    transition: all 120ms ease;
+
+    &:hover {
+        border-color: rgba(255, 255, 255, 0.26) !important;
+        background: linear-gradient(180deg, rgba(60, 65, 75, 1), rgba(40, 44, 52, 1)) !important;
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}
+
+.pcui-input,
+.pcui-input-element,
+.pcui-text-input,
+.pcui-numeric-input,
+.pcui-select-input {
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    background-color: rgba(18, 21, 27, 0.98) !important;
+    color: #eef6ff !important;
+}
+
+.pcui-slider-bar {
+    background: linear-gradient(90deg, rgba(94, 100, 111, 0.65), rgba(126, 133, 146, 0.92)) !important;
+}
+
+.pcui-slider-handle {
+    border-radius: 50% !important;
+    box-shadow: 0 0 0 2px rgba(170, 175, 185, 0.45);
+}
+
+.font-thin {
+    font-family: 'Proxima Nova Thin', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-weight: 100;
+    font-style: normal;
+}
+
+.font-light {
+    font-family: 'Proxima Nova Light', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-weight: 200;
+    font-style: normal;
+}
+
+.font-regular {
+    font-family: 'Proxima Nova Regular', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    font-style: normal;
+}
+
+.font-bold {
+    font-family: 'Proxima Nova Bold', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-style: normal;
+}
+
+body.immersive-ui {
+    #scene-panel,
+    #view-panel,
+    #color-panel,
+    #bottom-toolbar,
+    #right-toolbar,
+    #mode-toggle,
+    #view-cube-container,
+    #app-label,
+    #cursor-label,
+    #timeline-panel,
+    #data-panel,
+    .menu-panel {
+        display: none !important;
+    }
+}

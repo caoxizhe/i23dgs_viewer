@@ -1,0 +1,25 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="192" y2="192" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2A2E35"/>
+      <stop offset="1" stop-color="#171A20"/>
+    </linearGradient>
+    <linearGradient id="eye" x1="40" y1="60" x2="152" y2="132" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F3F5F8"/>
+      <stop offset="1" stop-color="#B6BCC5"/>
+    </linearGradient>
+    <radialGradient id="iris" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(96 96) rotate(90) scale(22)">
+      <stop stop-color="#ECEFF4"/>
+      <stop offset="1" stop-color="#8E96A2"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="192" height="192" rx="0" fill="url(#bg)"/>
+  <rect x="1" y="1" width="190" height="190" rx="0" stroke="white" stroke-opacity="0.12" stroke-width="2"/>
+  <path d="M28 96C39 75 60 58 96 58C132 58 153 75 164 96C153 117 132 134 96 134C60 134 39 117 28 96Z" stroke="url(#eye)" stroke-width="8" stroke-linejoin="round"/>
+  <circle cx="96" cy="96" r="22" fill="url(#iris)"/>
+  <circle cx="96" cy="96" r="9" fill="#151920"/>
+  <circle cx="102" cy="90" r="3.5" fill="#F6F8FB"/>
+  <rect x="56" y="142" width="80" height="24" rx="12" fill="white" fill-opacity="0.1"/>
+  <text x="96" y="158" text-anchor="middle" fill="#E8ECF2" font-size="14" font-family="Segoe UI, Inter, Arial, sans-serif" font-weight="700" letter-spacing="1">I23D</text>
+</svg>

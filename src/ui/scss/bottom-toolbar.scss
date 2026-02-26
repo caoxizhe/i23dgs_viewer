@@ -1,0 +1,130 @@
+@use 'colors.scss' as *;
+
+#bottom-toolbar {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    height: 44px;
+    transform: translate(-50%, 0);
+    padding: 0px 6px;
+    border-radius: 8px;
+
+    background-color: $bcg-dark;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.bottom-toolbar-button, .bottom-toolbar-tool, .bottom-toolbar-toggle {
+    width: 32px;
+    height: 32px;
+    margin: 0px 1px;
+    padding: 0px;
+    border: 0px;
+    border-radius: 2px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+        font-size: 16px !important;
+        line-height: 1;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: $clr-default;
+    }
+}
+
+#bottom-toolbar-sphere svg,
+#bottom-toolbar-box svg,
+#bottom-toolbar-flood svg,
+#bottom-toolbar-eyedropper svg,
+#bottom-toolbar-polygon svg,
+#bottom-toolbar-lasso svg,
+#bottom-toolbar-brush svg,
+#bottom-toolbar-picker svg,
+#bottom-toolbar-undo svg,
+#bottom-toolbar-redo svg {
+    width: 32px;
+    height: 32px;
+    margin: 0;
+}
+
+// optical alignment fine-tuning for compact mode
+#bottom-toolbar-sphere svg {
+    width: 32px;
+    height: 32px;
+    transform: translate(-50%, -50%);
+}
+
+#bottom-toolbar-box svg {
+    width: 32px;
+    height: 32px;
+    transform: translate(-50%, -50%);
+}
+
+.bottom-toolbar-separator {
+    width: 2px;
+    height: 30px;
+    margin: 0px 7px;
+    background-color: $bcg-primary;
+}
+
+.bottom-toolbar-button {
+    svg {
+        color: $clr-default;
+    }
+}
+
+.bottom-toolbar-tool {
+    background-color: $bcg-primary;
+
+    svg {
+        color: $clr-default
+    }
+
+    &.active {
+        color: $clr-active;
+        background-color: $clr-hilight !important;
+
+        svg {
+            color: $clr-active;
+        }
+    }
+
+    &.disabled {
+        background-color: $bcg-dark;
+
+        svg {
+            color: $clr-disabled;
+        }
+    }
+}
+
+.bottom-toolbar-toggle.active {
+    &::before {
+        color: $clr-hilight;
+    }
+
+    svg {
+        color: $clr-hilight;
+    }
+}

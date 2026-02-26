@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>I23DGS Viewer</title>
+        <meta charset="utf-8" />
+        <base href="__BASE_HREF__">
+        <link rel="manifest" href="./manifest.json">
+        <link rel="stylesheet" href="./index.css">
+        <link rel="shortcut icon" href="./static/icons/i23d-logo-192.svg">
+        <meta name="description" content="I23DGS Viewer is a browser-based viewer and editor for 3D Gaussian Splats." />
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+        <!-- jszip -->
+        <script src="jszip.js"></script>
+
+        <!-- Service worker: avoid registering during local development -->
+        <script>
+            const sw = navigator.serviceWorker;
+            const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+            if (sw && !isLocal && location.protocol === 'https:') {
+                sw.register('./sw.js')
+                    .then(reg => console.log('service worker registered', reg))
+                    .catch(err => console.log('failed to register service worker', err));
+            }
+        </script>
+
+        <!-- Query 参数解析：ply / sog / cameras / autoplay / prefer_ply -->
+        <script>
+            (function(){
+                try {
+                    const params = new URLSearchParams(location.search);
+                    const sog = params.get('sog');
+                    const ply = params.get('ply');
+                    const preferPly = params.get('prefer_ply');
+                    const cameras = params.get('cameras');
+                    const autoplay = params.get('autoplay');
+                    if (sog || ply || cameras) {
+                        window.__GS_PRELOAD__ = {
+                            sogUrl: sog || undefined,
+                            plyUrl: ply || undefined,
+                            preferPly: preferPly === '1' || preferPly === 'true',
+                            camerasUrl: cameras || undefined,
+                        };
+                    }
+                    if (autoplay && (autoplay === '1' || autoplay === 'true')) {
+                        window.__GS_AUTOPLAY__ = true;
+                    }
+                    console.debug('[index.html] preload vars', window.__GS_PRELOAD__, window.__GS_AUTOPLAY__);
+                } catch(e) { console.warn('[index.html] parse query failed', e); }
+            })();
+        </script>
+    </head>
+
+    <body>
+        <script type="module" src="./index.js"></script>
+    </body>
+</html>

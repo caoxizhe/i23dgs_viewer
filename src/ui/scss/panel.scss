@@ -1,0 +1,65 @@
+@use 'colors.scss' as *;
+
+.panel {
+    position: absolute;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, rgba(31, 34, 40, 0.98), rgba(22, 24, 29, 0.98));
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+
+    & > .panel-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 5px 6px;
+        background: linear-gradient(180deg, rgba(44, 48, 56, 1), rgba(31, 34, 41, 1));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+
+        & > .panel-header-icon {
+            font-family: pc-icon;
+            font-weight: bold;
+            font-size: 13px;
+            color: $clr-hilight;
+        }
+
+        & > .panel-header-label {
+            color: $text-primary;
+            font-weight: bold;
+            flex-grow: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+    }
+
+    .panel-header-button {
+        font-family: pc-icon;
+        font-weight: bold;
+        font-size: 13px;
+        color: $clr-hilight;
+    
+        padding: 4px;
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        border-radius: 6px;
+
+        text-align: center;
+
+        svg {
+            color: $clr-hilight;
+        }
+    
+        &:hover {
+            color: #f1f2f4;
+            background-color: rgba(38, 41, 48, 0.95);
+            cursor: pointer;
+        }
+    }
+
+    .panel-header-spacer {
+        flex-grow: 1;
+        padding: 0px;
+        margin: 0px;
+    }
+}

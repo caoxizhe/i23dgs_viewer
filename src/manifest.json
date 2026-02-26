@@ -1,0 +1,43 @@
+{
+    "name": "I23DGS Viewer",
+    "short_name": "I23DGS",
+    "description": "I23DGS Viewer is a browser-based viewer and editor for 3D Gaussian Splats.",
+    "display": "fullscreen",
+    "start_url": "./",
+    "scope": "./",
+    "background_color": "#ffffff",
+    "icons": [
+        {
+            "src": "./static/icons/i23d-logo-192.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "./static/icons/i23d-logo-512.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "./static/images/screenshot-narrow.jpg",
+            "type": "image/jpeg",
+            "sizes": "2160x3840",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "./static/images/screenshot-wide.jpg",
+            "type": "image/jpeg",
+            "sizes": "3840x2160",
+            "form_factor": "wide"
+        }
+    ],
+    "file_handlers": [
+        {
+            "action": "./",
+            "accept": {
+                "application/ply": [".ply"]
+            }
+        }
+    ]
+}
