@@ -67,6 +67,7 @@
     "panel.view-options.fly-speed": "相机飞行速度",
     "panel.view-options.remote-control-scale": "远程控制尺度",
     "panel.view-options.high-precision": "高精度渲染",
+    "panel.view-options.global-sort": "全局高斯排序",
     "panel.view-options.tonemapping": "色调映射",
     "panel.view-options.tonemapping.none": "无",
     "panel.view-options.tonemapping.linear": "线性",

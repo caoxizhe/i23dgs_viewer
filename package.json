@@ -1,9 +1,9 @@
 {
-    "name": "supersplat",
-    "version": "2.16.1",
+    "name": "i23dgs-viewer",
+    "version": "0.0.1",
     "author": "PlayCanvas<support@playcanvas.com>",
     "homepage": "https://playcanvas.com/supersplat/editor",
-    "description": "3D Gaussian Splat Editor",
+    "description": "I23DGS Viewer",
     "keywords": [
         "playcanvas",
         "ply",

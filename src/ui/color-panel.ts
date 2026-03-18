@@ -412,6 +412,9 @@ class ColorPanel extends Container {
 
         const setVisible = (visible: boolean) => {
             if (visible === this.hidden) {
+                if (visible) {
+                    events.fire('remotePanel.setVisible', false);
+                }
                 this.hidden = !visible;
                 events.fire('colorPanel.visible', visible);
             }

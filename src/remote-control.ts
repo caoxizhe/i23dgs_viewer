@@ -195,6 +195,13 @@ const registerRemoteControlEvents = (events: Events) => {
     const setPanelVisible = (visible: boolean) => {
         mountPanel();
         panelVisible = !!visible;
+
+        // keep only one right-side panel open at a time
+        if (panelVisible) {
+            events.fire('viewPanel.setVisible', false);
+            events.fire('colorPanel.setVisible', false);
+        }
+
         panel.style.display = panelVisible ? 'block' : 'none';
         localStorage.setItem('remote.panel.visible', panelVisible ? '1' : '0');
         events.fire('remotePanel.visible', panelVisible);

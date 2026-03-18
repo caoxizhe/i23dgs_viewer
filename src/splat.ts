@@ -62,6 +62,8 @@ class Splat extends Element {
     localBoundDirty = true;
     worldBoundDirty = true;
     _visible = true;
+    isGlobalSortProxy = false;
+    renderSuppressed = false;
     transformPalette: TransformPalette;
 
     selectionAlpha = 1;
@@ -400,7 +402,7 @@ class Splat extends Element {
             }
         }
 
-        this.entity.enabled = this.visible;
+        this.entity.enabled = this.visible && !this.renderSuppressed;
     }
 
     focalPoint() {

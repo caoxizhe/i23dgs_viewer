@@ -67,6 +67,7 @@
     "panel.view-options.fly-speed": "Fly Speed",
     "panel.view-options.remote-control-scale": "Remote Control Scale",
     "panel.view-options.high-precision": "High Precision Rendering",
+    "panel.view-options.global-sort": "Global Gaussian Sort",
     "panel.view-options.tonemapping": "Tonemapping",
     "panel.view-options.tonemapping.none": "None",
     "panel.view-options.tonemapping.linear": "Linear",

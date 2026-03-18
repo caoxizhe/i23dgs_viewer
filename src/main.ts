@@ -8,6 +8,7 @@ import { Events } from './events';
 import { initFileHandler } from './file-handler';
 import { registerIframeApi } from './iframe-api';
 import { registerImageEvents } from './images';
+import { registerGlobalSortEvents } from './global-sort';
 import { registerPlySequenceEvents } from './ply-sequence';
 import { runPreload } from './preload';
 import { registerPublishEvents } from './publish';
@@ -259,6 +260,7 @@ const main = async () => {
 
     registerEditorEvents(events, editHistory, scene);
     registerSelectionEvents(events, scene);
+    registerGlobalSortEvents(scene, events);
     registerTimelineEvents(events);
     registerCameraPosesEvents(events);
     registerTransformHandlerEvents(events);

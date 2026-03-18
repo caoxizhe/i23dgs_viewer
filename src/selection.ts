@@ -7,6 +7,9 @@ const registerSelectionEvents = (events: Events, scene: Scene) => {
     let selection: Splat = null;
 
     const setSelection = (splat: Splat) => {
+        if (splat?.isGlobalSortProxy) {
+            return;
+        }
         if (splat !== selection && (!splat || splat.visible)) {
             const prev = selection;
             selection = splat;
@@ -23,7 +26,8 @@ const registerSelectionEvents = (events: Events, scene: Scene) => {
     });
 
     events.on('selection.next', () => {
-        const splats = scene.getElementsByType(ElementType.splat) as Splat[];
+        const splats = (scene.getElementsByType(ElementType.splat) as Splat[])
+        .filter(splat => !splat.isGlobalSortProxy);
         if (splats.length > 1) {
             const idx = splats.indexOf(selection);
             setSelection(splats[(idx + 1) % splats.length]);
@@ -31,14 +35,15 @@ const registerSelectionEvents = (events: Events, scene: Scene) => {
     });
 
     events.on('scene.elementAdded', (element: Element) => {
-        if (element.type === ElementType.splat) {
+        if (element.type === ElementType.splat && !(element as Splat).isGlobalSortProxy) {
             setSelection(element as Splat);
         }
     });
 
     events.on('scene.elementRemoved', (element: Element) => {
         if (element === selection) {
-            const splats = scene.getElementsByType(ElementType.splat) as Splat[];
+            const splats = (scene.getElementsByType(ElementType.splat) as Splat[])
+            .filter(splat => !splat.isGlobalSortProxy);
             setSelection(splats.length === 1 ? null : splats.find(v => v !== element));
         }
     });
