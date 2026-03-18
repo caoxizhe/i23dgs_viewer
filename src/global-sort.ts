@@ -2,8 +2,8 @@ import { ElementType } from './element';
 import { Events } from './events';
 import { Scene } from './scene';
 import { BufferWriter } from './serialize/writer';
-import { serializePly } from './splat-serialize';
 import { Splat } from './splat';
+import { serializePly } from './splat-serialize';
 import { State } from './splat-state';
 
 const registerGlobalSortEvents = (scene: Scene, events: Events) => {
@@ -106,9 +106,9 @@ const registerGlobalSortEvents = (scene: Scene, events: Events) => {
             const end = range.start + range.count;
             for (let i = range.start; i < end; ++i) {
                 if (hidden) {
-                    state[i] = state[i] | State.deleted;
+                    state[i] |= State.deleted;
                 } else {
-                    state[i] = state[i] & ~State.deleted;
+                    state[i] &= ~State.deleted;
                 }
             }
         });
@@ -242,7 +242,9 @@ const registerGlobalSortEvents = (scene: Scene, events: Events) => {
         if (suppress || sceneClearing) {
             return;
         }
-        void rebuildProxy();
+        rebuildProxy().catch((error) => {
+            console.error(error);
+        });
     };
 
     events.function('globalSort.enabled', () => {
