@@ -141,6 +141,60 @@ body {
     }
 }
 
+#fps-label {
+    position: absolute;
+    left: 50%;
+    top: 34px;
+    transform: translateX(-50%);
+    z-index: 6;
+    min-width: 84px;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: #9bc9ff;
+    background: linear-gradient(180deg, rgba(29, 33, 40, 0.95), rgba(20, 23, 29, 0.95));
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    padding: 6px 10px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+
+    &.fps-low {
+        color: #ff6f6f;
+        border-color: rgba(255, 111, 111, 0.45);
+    }
+
+    &.fps-mid {
+        color: #ffd56f;
+        border-color: rgba(255, 213, 111, 0.45);
+    }
+
+    &.fps-high {
+        color: #6dffa8;
+        border-color: rgba(109, 255, 168, 0.45);
+    }
+}
+
+#camera-caption-box {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 8px 0 0 0;
+    padding: 10px 12px;
+    white-space: pre-line;
+    pointer-events: none;
+
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, rgba(30, 34, 41, 0.96), rgba(22, 26, 32, 0.96));
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+
+    color: #e8eef8;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    letter-spacing: 0.15px;
+}
+
 #view-cube-container {
     position: absolute;
     width: 140px;

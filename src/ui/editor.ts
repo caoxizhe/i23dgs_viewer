@@ -78,6 +78,12 @@ class EditorUI {
             text: 'I23DGS Viewer'
         });
 
+        // fps label
+        const fpsLabel = new Label({
+            id: 'fps-label',
+            text: 'FPS 0'
+        });
+
         // cursor label
         const cursorLabel = new Label({
             id: 'cursor-label'
@@ -130,6 +136,7 @@ class EditorUI {
 
         canvasContainer.dom.appendChild(canvas);
         canvasContainer.append(appLabel);
+        canvasContainer.append(fpsLabel);
         canvasContainer.append(cursorLabel);
         canvasContainer.append(toolsContainer);
         canvasContainer.append(scenePanel);
@@ -327,6 +334,40 @@ class EditorUI {
 
         events.function('showPopup', (options: ShowOptions) => {
             return this.popup.show(options);
+        });
+
+        // realtime FPS meter
+        let fpsEma = 0;
+        let fpsAccum = 0;
+
+        events.on('update', (dt: number) => {
+            if (!Number.isFinite(dt) || dt <= 0) {
+                return;
+            }
+
+            const fps = 1 / dt;
+            fpsEma = fpsEma === 0 ? fps : fpsEma * 0.85 + fps * 0.15;
+
+            fpsAccum += dt;
+
+            // update UI at lower frequency to reduce text churn
+            if (fpsAccum >= 0.2) {
+                const displayFps = Math.round(fpsEma);
+                fpsLabel.text = `FPS ${displayFps}`;
+
+                fpsLabel.class.remove('fps-low');
+                fpsLabel.class.remove('fps-mid');
+                fpsLabel.class.remove('fps-high');
+                if (displayFps < 10) {
+                    fpsLabel.class.add('fps-low');
+                } else if (displayFps <= 40) {
+                    fpsLabel.class.add('fps-mid');
+                } else {
+                    fpsLabel.class.add('fps-high');
+                }
+
+                fpsAccum = 0;
+            }
         });
 
         // persistent UI state: camera frustums visibility

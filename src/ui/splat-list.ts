@@ -181,7 +181,7 @@ class SplatList extends Container {
         });
 
         events.on('scene.elementAdded', (element: Element) => {
-            if (element.type === ElementType.splat && !(element as Splat).isGlobalSortProxy) {
+            if (element.type === ElementType.splat) {
                 const splat = element as Splat;
                 const item = new SplatItem(splat.name, edit);
                 this.append(item);

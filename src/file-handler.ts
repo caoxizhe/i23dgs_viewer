@@ -422,14 +422,12 @@ const initFileHandler = (scene: Scene, events: Events, dropTarget: HTMLElement) 
     // get the list of visible splats containing gaussians
     const getSplats = () => {
         return (scene.getElementsByType(ElementType.splat) as Splat[])
-        .filter(splat => !splat.isGlobalSortProxy)
         .filter(splat => splat.visible)
         .filter(splat => splat.numSplats > 0);
     };
 
     events.function('scene.allSplats', () => {
-        return (scene.getElementsByType(ElementType.splat) as Splat[])
-        .filter(splat => !splat.isGlobalSortProxy);
+        return (scene.getElementsByType(ElementType.splat) as Splat[]);
     });
 
     events.function('scene.splats', () => {

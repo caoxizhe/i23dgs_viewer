@@ -6,7 +6,6 @@ import { EditHistory } from './edit-history';
 import { registerEditorEvents } from './editor';
 import { Events } from './events';
 import { initFileHandler } from './file-handler';
-import { registerGlobalSortEvents } from './global-sort';
 import { registerIframeApi } from './iframe-api';
 import { registerImageEvents } from './images';
 import { registerPlySequenceEvents } from './ply-sequence';
@@ -260,7 +259,6 @@ const main = async () => {
 
     registerEditorEvents(events, editHistory, scene);
     registerSelectionEvents(events, scene);
-    registerGlobalSortEvents(scene, events);
     registerTimelineEvents(events);
     registerCameraPosesEvents(events);
     registerTransformHandlerEvents(events);

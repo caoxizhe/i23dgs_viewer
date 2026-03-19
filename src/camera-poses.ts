@@ -47,21 +47,6 @@ const registerCameraPosesEvents = (events: Events) => {
     if (!captionBox) {
         captionBox = document.createElement('div');
         captionBox.id = 'camera-caption-box';
-        captionBox.style.position = 'relative';
-        captionBox.style.display = 'block';
-        captionBox.style.width = '100%';
-        captionBox.style.boxSizing = 'border-box';
-        captionBox.style.margin = '6px auto';
-        captionBox.style.textAlign = 'center';
-        captionBox.style.pointerEvents = 'none';
-        captionBox.style.background = 'rgba(0,0,0,0.95)';
-        captionBox.style.borderRadius = '4px';
-        captionBox.style.padding = '8px';
-        captionBox.style.color = '#fff';
-        captionBox.style.fontFamily = 'monospace';
-        captionBox.style.fontSize = '12px';
-        captionBox.style.lineHeight = '16px';
-        captionBox.style.whiteSpace = 'pre-line';
         captionBox.textContent = '';
         const scenePanelEl = document.getElementById('scene-panel');
         if (scenePanelEl) {
@@ -413,7 +398,7 @@ const registerCameraPosesEvents = (events: Events) => {
             const xAxis = new Vec3(basis[0][0], basis[1][0], basis[2][0]);
             const yAxis = new Vec3(basis[0][1], basis[1][1], basis[2][1]);
             const zAxis = new Vec3(basis[0][2], basis[1][2], basis[2][2]);
-            captionBox.textContent = `position: ${fmt(pos)}\nx axis: ${fmt(xAxis)}\ny axis: ${fmt(yAxis)}\nz axis: ${fmt(zAxis)}`;
+            captionBox.textContent = `Position  ${fmt(pos)}\nX Axis    ${fmt(xAxis)}\nY Axis    ${fmt(yAxis)}\nZ Axis    ${fmt(zAxis)}`;
         }
     };
 

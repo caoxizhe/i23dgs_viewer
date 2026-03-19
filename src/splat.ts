@@ -62,8 +62,6 @@ class Splat extends Element {
     localBoundDirty = true;
     worldBoundDirty = true;
     _visible = true;
-    isGlobalSortProxy = false;
-    renderSuppressed = false;
     transformPalette: TransformPalette;
 
     selectionAlpha = 1;
@@ -100,22 +98,10 @@ class Splat extends Element {
 
         const instance = this.entity.gsplat.instance;
 
-        // use custom render order distance calculation for splats
+        // use block-center distance for render order between splat blocks
         instance.meshInstance.calculateSortDistance = (meshInstance: MeshInstance, pos: Vec3, dir: Vec3) => {
-            const bound = this.localBound;
-            const mat = this.entity.getWorldTransform();
-            let maxDist;
-            for (let i = 0; i < 8; ++i) {
-                vec.x = bound.center.x + bound.halfExtents.x * (i & 1 ? 1 : -1);
-                vec.y = bound.center.y + bound.halfExtents.y * (i & 2 ? 1 : -1);
-                vec.z = bound.center.z + bound.halfExtents.z * (i & 4 ? 1 : -1);
-                mat.transformPoint(vec, vec);
-                const dist = vec.sub(pos).dot(dir);
-                if (i === 0 || dist > maxDist) {
-                    maxDist = dist;
-                }
-            }
-            return maxDist;
+            const center = this.worldBound.center;
+            return vec.sub2(center, pos).lengthSq();
         };
 
         // added per-splat state channel
@@ -402,7 +388,7 @@ class Splat extends Element {
             }
         }
 
-        this.entity.enabled = this.visible && !this.renderSuppressed;
+        this.entity.enabled = this.visible;
     }
 
     focalPoint() {
