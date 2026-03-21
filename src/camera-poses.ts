@@ -406,9 +406,8 @@ const registerCameraPosesEvents = (events: Events) => {
                 const splats = events.invoke('scene.allSplats') as Splat[] || [];
                 if (splats && splats.length > 0) {
                     const order = splats.map((s) => {
-                        const d2 = Number.isFinite((s as any).lastSortDistanceSq)
-                            ? (s as any).lastSortDistanceSq as number
-                            : Number.POSITIVE_INFINITY;
+                        const d2 = Number.isFinite((s as any).lastSortDistanceSq) ?
+                            (s as any).lastSortDistanceSq as number : Number.POSITIVE_INFINITY;
                         return { name: s.filename || s.name, d2 };
                     }).sort((a, b) => b.d2 - a.d2);
 
@@ -417,7 +416,7 @@ const registerCameraPosesEvents = (events: Events) => {
                         const d = Number.isFinite(it.d2) ? Math.sqrt(it.d2).toFixed(2) : 'n/a';
                         return `${pad(i + 1)}. ${it.name}  d=${d}`;
                     });
-                    captionBox.textContent += `\n\nSplat Order\n` + lines.join('\n');
+                    captionBox.textContent += `\n\nSplat Order\n${lines.join('\n')}`;
                 }
             } catch (e) {
                 // ignore debug failures
