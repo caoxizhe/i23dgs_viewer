@@ -148,6 +148,8 @@ class EditorUI {
         canvasContainer.append(imageContainer);
         canvasContainer.append(menu);
 
+        
+
         // view axes container
         const viewCube = new ViewCube(events);
         canvasContainer.append(viewCube);
@@ -213,6 +215,8 @@ class EditorUI {
         events.on('show.shortcuts', () => {
             shortcutsPopup.hidden = false;
         });
+
+        
 
         events.function('show.exportPopup', (exportType, splatNames: [string], showFilenameEdit: boolean) => {
             return exportPopup.show(exportType, splatNames, showFilenameEdit);

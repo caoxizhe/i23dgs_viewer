@@ -324,7 +324,9 @@ const registerRenderEvents = (scene: Scene, events: Events) => {
                             resolve();
                         }, 1000);
                     });
-                }));
+                        }));
+
+                
             };
 
             // capture the current video frame

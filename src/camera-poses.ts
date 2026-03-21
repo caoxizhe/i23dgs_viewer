@@ -398,7 +398,30 @@ const registerCameraPosesEvents = (events: Events) => {
             const xAxis = new Vec3(basis[0][0], basis[1][0], basis[2][0]);
             const yAxis = new Vec3(basis[0][1], basis[1][1], basis[2][1]);
             const zAxis = new Vec3(basis[0][2], basis[1][2], basis[2][2]);
+            // base caption (position + axes)
             captionBox.textContent = `Position  ${fmt(pos)}\nX Axis    ${fmt(xAxis)}\nY Axis    ${fmt(yAxis)}\nZ Axis    ${fmt(zAxis)}`;
+
+            // append per-frame splat render order (furthest -> nearest)
+            try {
+                const splats = events.invoke('scene.allSplats') as Splat[] || [];
+                if (splats && splats.length > 0) {
+                    const order = splats.map((s) => {
+                        const d2 = Number.isFinite((s as any).lastSortDistanceSq)
+                            ? (s as any).lastSortDistanceSq as number
+                            : Number.POSITIVE_INFINITY;
+                        return { name: s.filename || s.name, d2 };
+                    }).sort((a, b) => b.d2 - a.d2);
+
+                    const pad = (n: number) => String(n).padStart(2, '0');
+                    const lines = order.map((it, i) => {
+                        const d = Number.isFinite(it.d2) ? Math.sqrt(it.d2).toFixed(2) : 'n/a';
+                        return `${pad(i + 1)}. ${it.name}  d=${d}`;
+                    });
+                    captionBox.textContent += `\n\nSplat Order\n` + lines.join('\n');
+                }
+            } catch (e) {
+                // ignore debug failures
+            }
         }
     };
 

@@ -195,6 +195,28 @@ body {
     letter-spacing: 0.15px;
 }
 
+#splat-order-box {
+    position: absolute;
+    right: 12px;
+    top: 80px;
+    max-width: 320px;
+    max-height: 60vh;
+    overflow: auto;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(24, 28, 34, 0.9), rgba(18, 20, 24, 0.9));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    color: #cfe9ff;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.35;
+    white-space: pre-line;
+    z-index: 30;
+}
+
+
 #view-cube-container {
     position: absolute;
     width: 140px;

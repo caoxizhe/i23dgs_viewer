@@ -79,6 +79,8 @@ class Splat extends Element {
     measureSelection = -1;
 
     rebuildMaterial: (bands: number) => void;
+    lastSortDistanceSq = Number.POSITIVE_INFINITY;
+    centroidLocal = new Vec3();
 
     constructor(asset: Asset, orientation: Vec3) {
         super(ElementType.splat);
@@ -98,10 +100,36 @@ class Splat extends Element {
 
         const instance = this.entity.gsplat.instance;
 
-        // use block-center distance for render order between splat blocks
+        // compute centroid once at import time from all point positions
+        {
+            const x = this.splatData.getProp('x') as Float32Array;
+            const y = this.splatData.getProp('y') as Float32Array;
+            const z = this.splatData.getProp('z') as Float32Array;
+
+            if (x && y && z && x.length > 0) {
+                let sx = 0;
+                let sy = 0;
+                let sz = 0;
+                const n = Math.min(x.length, y.length, z.length);
+                for (let i = 0; i < n; i++) {
+                    sx += x[i];
+                    sy += y[i];
+                    sz += z[i];
+                }
+                this.centroidLocal.set(sx / n, sy / n, sz / n);
+            } else {
+                // fallback if position props are unavailable
+                this.centroidLocal.copy(this.localBound.center);
+            }
+        }
+
+        // use centroid distance for render order between splat blocks
         instance.meshInstance.calculateSortDistance = (meshInstance: MeshInstance, pos: Vec3, dir: Vec3) => {
-            const center = this.worldBound.center;
-            return vec.sub2(center, pos).lengthSq();
+            // centroid is computed once in local space at import time; convert to world each call
+            this.entity.getWorldTransform().transformPoint(this.centroidLocal, veca);
+            const d2 = vec.sub2(veca, pos).lengthSq();
+            this.lastSortDistanceSq = d2;
+            return d2;
         };
 
         // added per-splat state channel
@@ -174,6 +202,7 @@ class Splat extends Element {
         // @ts-ignore
         instance.meshInstance._updateAabb = false;
 
+        // when sort changes, re-render the scene and publish debug order
         // when sort changes, re-render the scene
         instance.sorter.on('updated', () => {
             this.changedCounter++;
