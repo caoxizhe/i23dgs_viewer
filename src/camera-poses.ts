@@ -408,7 +408,7 @@ const registerCameraPosesEvents = (events: Events) => {
                     const order = splats.map((s) => {
                         const d2 = Number.isFinite((s as any).lastSortDistanceSq) ?
                             (s as any).lastSortDistanceSq as number : Number.POSITIVE_INFINITY;
-                        return { name: s.filename || s.name, d2 };
+                        return { splat: s, name: s.filename || s.name, d2 };
                     }).sort((a, b) => b.d2 - a.d2);
 
                     const pad = (n: number) => String(n).padStart(2, '0');
@@ -416,6 +416,8 @@ const registerCameraPosesEvents = (events: Events) => {
                         const d = Number.isFinite(it.d2) ? Math.sqrt(it.d2).toFixed(2) : 'n/a';
                         return `${pad(i + 1)}. ${it.name}  d=${d}`;
                     });
+
+                    // Splat Centers debug section disabled
                     captionBox.textContent += `\n\nSplat Order\n${lines.join('\n')}`;
                 }
             } catch (e) {

@@ -81,6 +81,7 @@ class Splat extends Element {
     rebuildMaterial: (bands: number) => void;
     lastSortDistanceSq = Number.POSITIVE_INFINITY;
     centroidLocal = new Vec3();
+    importedCenterLocal: Vec3 | null = null;
 
     constructor(asset: Asset, orientation: Vec3) {
         super(ElementType.splat);
@@ -116,6 +117,7 @@ class Splat extends Element {
                     sy += y[i];
                     sz += z[i];
                 }
+                // average centroid in native splat local coordinates
                 this.centroidLocal.set(sx / n, sy / n, sz / n);
             } else {
                 // fallback if position props are unavailable
@@ -123,10 +125,11 @@ class Splat extends Element {
             }
         }
 
-        // use centroid distance for render order between splat blocks
+        // use imported center if available, otherwise centroid distance
         instance.meshInstance.calculateSortDistance = (meshInstance: MeshInstance, pos: Vec3, dir: Vec3) => {
-            // centroid is computed once in local space at import time; convert to world each call
-            this.entity.getWorldTransform().transformPoint(this.centroidLocal, veca);
+            // center is in local space; convert to world each call
+            const localCenter = this.importedCenterLocal ?? this.centroidLocal;
+            this.entity.getWorldTransform().transformPoint(localCenter, veca);
             const d2 = vec.sub2(veca, pos).lengthSq();
             this.lastSortDistanceSq = d2;
             return d2;

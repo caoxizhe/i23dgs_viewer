@@ -1,6 +1,8 @@
 import { Button, Container, NumericInput, SelectInput } from '@playcanvas/pcui';
+import { Vec3 } from 'playcanvas';
 
 import { Events } from '../events';
+import { Splat } from '../splat';
 import { localize } from './localization';
 import { Tooltips } from './tooltips';
 
@@ -211,6 +213,12 @@ class TimelinePanel extends Container {
             enabled: true
         });
 
+        const importCenter = new Button({
+            class: 'button',
+            text: 'CTR',
+            enabled: true
+        });
+
         const buttonControls = new Container({
             id: 'button-controls'
         });
@@ -223,6 +231,7 @@ class TimelinePanel extends Container {
         buttonControls.append(simplifyToggle);
         buttonControls.append(jumpNearest);
         buttonControls.append(uploadImages);
+        buttonControls.append(importCenter);
 
         // settings
 
@@ -387,6 +396,150 @@ class TimelinePanel extends Container {
             events.fire('images.uploadFolder');
         });
 
+        importCenter.on('click', async () => {
+            const splats = (events.invoke('scene.allSplats') as Splat[]) || [];
+            if (splats.length === 0) {
+                await events.invoke('showPopup', {
+                    type: 'error',
+                    header: '导入中心点失败',
+                    message: '当前没有已加载的 Splat。'
+                });
+                return;
+            }
+
+            const target = await new Promise<Splat | null>((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.left = '0';
+                overlay.style.top = '0';
+                overlay.style.width = '100%';
+                overlay.style.height = '100%';
+                overlay.style.background = 'rgba(0,0,0,0.45)';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                overlay.style.zIndex = '10000';
+
+                const panel = document.createElement('div');
+                panel.style.width = '420px';
+                panel.style.maxWidth = '92vw';
+                panel.style.padding = '12px';
+                panel.style.borderRadius = '10px';
+                panel.style.background = 'rgba(30,34,41,0.98)';
+                panel.style.border = '1px solid rgba(255,255,255,0.15)';
+                panel.style.color = '#e8eef8';
+
+                const title = document.createElement('div');
+                title.textContent = '请选择要加载中心点的 Splat';
+                title.style.fontWeight = '700';
+                title.style.marginBottom = '8px';
+
+                const select = document.createElement('select');
+                select.style.width = '100%';
+                select.style.padding = '8px';
+                select.style.borderRadius = '8px';
+                select.style.border = '1px solid rgba(255,255,255,0.2)';
+                select.style.background = '#141820';
+                select.style.color = '#eef6ff';
+
+                splats.forEach((s, i) => {
+                    const op = document.createElement('option');
+                    op.value = String(i);
+                    op.textContent = s.filename || s.name || `Splat ${i + 1}`;
+                    select.appendChild(op);
+                });
+
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.justifyContent = 'flex-end';
+                row.style.gap = '8px';
+                row.style.marginTop = '10px';
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = '取消';
+                const okBtn = document.createElement('button');
+                okBtn.textContent = '确定';
+
+                [cancelBtn, okBtn].forEach((btn) => {
+                    btn.style.padding = '6px 12px';
+                    btn.style.borderRadius = '8px';
+                    btn.style.border = '1px solid rgba(255,255,255,0.2)';
+                    btn.style.background = '#202734';
+                    btn.style.color = '#eef6ff';
+                    btn.style.cursor = 'pointer';
+                });
+
+                cancelBtn.onclick = () => {
+                    overlay.remove();
+                    resolve(null);
+                };
+
+                okBtn.onclick = () => {
+                    const idx = Math.max(0, Math.min(splats.length - 1, parseInt(select.value, 10) || 0));
+                    overlay.remove();
+                    resolve(splats[idx] ?? null);
+                };
+
+                row.append(okBtn);
+                row.append(cancelBtn);
+                panel.append(title);
+                panel.append(select);
+                panel.append(row);
+                overlay.append(panel);
+                document.body.appendChild(overlay);
+            });
+
+            if (!target) {
+                return;
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.txt,text/plain';
+            input.style.display = 'none';
+
+            input.onchange = async (event: Event) => {
+                try {
+                    const file = (event.target as HTMLInputElement).files?.[0];
+                    if (!file) return;
+
+                    const text = await file.text();
+                    const nums = (text.match(/[-+]?\d*\.?\d+(?:e[-+]?\d+)?/gi) || []).map(Number);
+
+                    if (nums.length < 3 || !Number.isFinite(nums[0]) || !Number.isFinite(nums[1]) || !Number.isFinite(nums[2])) {
+                        await events.invoke('showPopup', {
+                            type: 'error',
+                            header: '导入中心点失败',
+                            message: 'txt 文件中未找到 3 个有效实数坐标。'
+                        });
+                        return;
+                    }
+
+                    // coordinate transform aligned with avg centroid convention
+                    const center = new Vec3(nums[0], nums[1], nums[2]);
+                    target.importedCenterLocal = center;
+                    target.scene.forceRender = true;
+
+                    await events.invoke('showPopup', {
+                        type: 'info',
+                        header: '导入中心点成功',
+                        message: `目标: ${target.filename || target.name}\n中心点: [${center.x.toFixed(4)}, ${center.y.toFixed(4)}, ${center.z.toFixed(4)}]`
+                    });
+                } catch (e) {
+                    await events.invoke('showPopup', {
+                        type: 'error',
+                        header: '导入中心点失败',
+                        message: `读取或解析 txt 失败: ${e}`
+                    });
+                } finally {
+                    input.remove();
+                }
+            };
+
+            document.body.appendChild(input);
+            input.click();
+        });
+
         jumpNearest.on('click', () => {
             events.fire('camera.jumpToNearestPose');
         });
@@ -432,6 +585,7 @@ class TimelinePanel extends Container {
         tooltips.register(loadKeys, '加载相机关键帧', 'top');
         tooltips.register(simplifyToggle, '简化关键帧（最多10个）', 'top');
         tooltips.register(uploadImages, '上传图片文件夹', 'top');
+        tooltips.register(importCenter, '导入中心点 txt（3个实数）', 'top');
         tooltips.register(jumpNearest, '跳转到最近关键帧并对齐视角', 'top');
         tooltips.register(speed, localize('tooltip.timeline.frame-rate'), 'top');
         tooltips.register(frames, localize('tooltip.timeline.total-frames'), 'top');
